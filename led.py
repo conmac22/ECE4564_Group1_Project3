@@ -2,20 +2,21 @@ import RPi.GPIO as GPIO
 from flask import Flask, jsonify, abort, make_response, request
 from time import sleep
 from zeroconf import ServiceInfo, ServiceBrowser, Zeroconf
-
+import socket
 app = Flask(__name__)
 
 class ZeroconfBroadcast:
     
     def zeroinit():
         name = 'ledPI'
-        type_ = '_UPnP._tcp.local.'
-        #description = {'deviceName': name}
+        type_ = '_http._tcp.local.'
+        properties_ = {'colors': ['red','blue','green','magenta','yellow','white']}
+        print(properties_)
         zeroconf = Zeroconf()
-        info = ServiceInfo(type_, name + '.' + type_)
+        info = ServiceInfo(type_, name + '.' + type_, addresses=[socket.inet_aton("192.168.178.28")], port=5000, properties=properties_)
         
         zeroconf.register_service(info)
-        generate_service_broadcast(info)
+        #generate_service_broadcast(info)
     
 @app.errorhandler(404)
 def not_found(error):
@@ -129,3 +130,4 @@ if __name__ == "__main__":
         green.stop()
         blue.stop()
         GPIO.cleanup()
+       
