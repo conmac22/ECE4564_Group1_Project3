@@ -60,31 +60,24 @@ def led():
         input('Press enter to exit...\n')
     finally:
         zeroconf.close()
-    operation = request.args.get('operation')
-    if operation == 'get':
-        response = requests.get('http://'+str(ipAddress)+':'+str(port)+'/LED')
-        return response.text
-    if operation == 'post':
-        params = {'status':'on', 'color':'magenta', 'intensity':'80'}
-        response = requests.post('http://'+str(ipAddress)+':'+str(port)+'/LED', data=params)
-        return response.text
-
-# # Get LED status
-# @app.route('/LED', methods=['POST'])
-# @auth.login_required
-# def post_led():
-#     global ipAddress, port, ledColors
-#     zeroconf = Zeroconf()
-#     listener = ZeroconfListener()
-#     browser = ServiceBrowser(zeroconf, '_http._tcp.local.', listener)
-#     try:
-#         input('Press enter to exit...\n')
-#     finally:
-#         zeroconf.close()
-#     params = {'status':'on', 'color':'magenta', 'intensity':'80'}
-#     response = requests.post('http://'+str(ipAddress)+':'+str(port)+'/LED?' + argsStr, data=params)
-#     return response.text
-
+    # GET
+    if len(request.args) == 0:
+        try:
+            response = requests.get('http://'+str(ipAddress)+':'+str(port)+'/LED', timeout=10)
+            return response.text
+        except requests.exceptions.Timeout:
+            return jsonify({'error': 'The LED Pi connection timed out.\n'}, 400)
+        except requests.exceptions.RequestException:
+            return jsonify({'error': 'The LED Pi service is not available.\n'}, 400)
+    # POST
+    else:
+        split_commands = request.args.get('command').split('-')
+        params = {'status': split_commands[0], 'color': split_commands[1], 'intensity': split_commands[2]}
+        if split_commands[1] not in ledColors:
+            return jsonify({'The specified color is not available.\n'}, 400)
+        else:
+            response = requests.post('http://'+str(ipAddress)+':'+str(port)+'/LED', data=params)
+            return response.text
 
 # Authentication
 @auth.verify_password
@@ -103,7 +96,7 @@ def verify_password(username, password):
 # Error handling for bad username/password
 @auth.error_handler
 def unauthorized():
-    return 'Could not verify your access level for that URL. You have to login with proper credentials.\n'
+    return jsonify({'error': 'Could not verify your access level for that URL. You have to login with proper credentials.\n'}, 401)
 
 
 if __name__ == '__main__':
