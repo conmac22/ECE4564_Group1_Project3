@@ -107,7 +107,7 @@ def led_blue(intensity):
 
 if __name__ == "__main__":
 
-    # setup RGBLED
+    # Setup RGBLED
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(16, GPIO.OUT)
     GPIO.setup(20, GPIO.OUT)
