@@ -16,9 +16,6 @@ class ZeroconfListener:
         port = info.port
         for (key, value) in info.properties.items():
             ledColors = (f'{value}')
-        print(ipAddress)
-        print(port)
-        print(ledColors)
 
 # Object instances set-up
 app = Flask(__name__)
@@ -49,8 +46,7 @@ def canvas_file():
     
 
 # Get LED status
-@app.route('/LED', methods = ['GET', 'POST'])E: Unable to locate package mongodb-org
-
+@app.route('/LED', methods = ['GET', 'POST'])
 @auth.login_required
 def led():
     global ipAddress, port, ledColors
